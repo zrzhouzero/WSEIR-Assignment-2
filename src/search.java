@@ -101,11 +101,15 @@ public class search {
         
         StringBuilder builder = new StringBuilder();
         builder.append(buffer.getInt()).append(System.lineSeparator());
+
+        // the buffer.getInt() above indicate the term frequency
         
         while(buffer.remaining() > 0) {
             builder.append(documentMappingTable.get(buffer.getInt())).append(" ");
             builder.append((int)buffer.get()).append(System.lineSeparator());
         }
+
+        // the buffer.getInt() above indicate the term frequency within a document
 
         queryResult = builder.toString();
         input.close();
