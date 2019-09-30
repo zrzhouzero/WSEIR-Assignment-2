@@ -1,6 +1,7 @@
 package util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.PriorityQueue;
 
 public class MinHeapPriorityQueue implements MinHeap {
@@ -23,14 +24,21 @@ public class MinHeapPriorityQueue implements MinHeap {
 
     @Override
     public void printRank() {
-        ArrayList<DocumentRankingPoints> printList = new ArrayList<>();
-        int minHeapSize = minHeap.size();
-        for (int i = 0; i < minHeapSize; i++) {
-            printList.add(minHeap.poll());
-        }
-        for (int i = minHeapSize - 1; i >= 0; i--) {
+        ArrayList<DocumentRankingPoints> printList = outputRank();
+        for (int i = printList.size() - 1; i >= 0; i--) {
             System.out.println(printList.get(i));
         }
+    }
+
+    @Override
+    public ArrayList<DocumentRankingPoints> outputRank() {
+        ArrayList<DocumentRankingPoints> outputList = new ArrayList<>();
+        int minHeapSize = minHeap.size();
+        for (int i = 0; i < minHeapSize; i++) {
+            outputList.add(minHeap.poll());
+        }
+        Collections.reverse(outputList);
+        return outputList;
     }
 
 }

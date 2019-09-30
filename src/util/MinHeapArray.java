@@ -1,6 +1,7 @@
 package util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class MinHeapArray implements MinHeap {
 
@@ -43,13 +44,20 @@ public class MinHeapArray implements MinHeap {
 
     @Override
     public void printRank() {
-        ArrayList<DocumentRankingPoints> printList = new ArrayList<>();
-        while (currentSize > 0) {
-            printList.add(poll());
-        }
+        ArrayList<DocumentRankingPoints> printList = outputRank();
         for (int i = printList.size() - 1; i >= 0; i--) {
             System.out.println(printList.get(i));
         }
+    }
+
+    @Override
+    public ArrayList<DocumentRankingPoints> outputRank() {
+        ArrayList<DocumentRankingPoints> outputList = new ArrayList<>();
+        while (currentSize > 0) {
+            outputList.add(poll());
+        }
+        Collections.reverse(outputList);
+        return outputList;
     }
 
     private void reformHeap() {
