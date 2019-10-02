@@ -189,7 +189,7 @@ public class search {
      * @param documentId the id of the document being counting
      * @return the total characters of the document
      */
-    // TODO: function to count the characters in a document
+    // TODO: function to count the characters in a document, and corresponding word count generator
     private static double getDocumentCharacterCount(int documentId) {
         return 10000;
     }
