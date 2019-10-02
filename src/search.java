@@ -298,7 +298,7 @@ public class search {
     }
 
 
-    // TODO: add more parameters, see assignment 2 page 4-5
+    // TODO: add more main line arguments, see assignment 2 page 4-5
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
 			// for test in ide
