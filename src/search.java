@@ -294,7 +294,8 @@ public class search {
             String[] terms = Arrays.copyOfRange(args, 3, args.length);
 
             // TODO: add a function to label the query, currently hard coded the label as "401"
-            query(401, terms);
+            int label = 401;
+            query(label, terms);
         } else {
             printInstruction();
         }
