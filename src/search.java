@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class search {
@@ -185,7 +187,7 @@ public class search {
         double ft = map.size();
 
         for (Integer i : map.keySet()) {
-            double count = countCharacters(i);
+            double count = getDocumentCharacterCount(i);
             DocumentInfo info = new DocumentInfo(map.get(i), count);
             countedMap.put(i, info);
             totalLength += count;
@@ -211,7 +213,7 @@ public class search {
      * @return the total characters of the document
      */
     // TODO: function to count the characters in a document
-    private static double countCharacters(int documentId) {
+    private static double getDocumentCharacterCount(int documentId) {
         return 10000;
     }
 
@@ -255,7 +257,9 @@ public class search {
             builder.append(documentMappingTable.get(rankList.get(i).getDocumentId())).append(" ");
             int rank = i + 1;
             builder.append(rank).append(" ");
-            builder.append(rankList.get(i).getDocumentPoint()).append(System.lineSeparator());
+            DecimalFormat df = new DecimalFormat("#.###");
+            df.setRoundingMode(RoundingMode.CEILING);
+            builder.append(df.format(rankList.get(i).getDocumentPoint())).append(System.lineSeparator());
         }
 
         return builder.toString();
@@ -300,6 +304,7 @@ public class search {
 
     // TODO: add more main line arguments, see assignment 2 page 4-5
     public static void main(String[] args) throws IOException {
+        long startTime = System.nanoTime();
         if (args.length == 0) {
 			// for test in ide
 //            loadResources("./lexicon", "./invlists", "./map");
@@ -316,6 +321,9 @@ public class search {
         } else {
             printInstruction();
         }
+        long endTime = System.nanoTime();
+        long time = (endTime - startTime) / 1000000;
+        System.out.println("Running time: " + time + " ms");
     }
 
 }
