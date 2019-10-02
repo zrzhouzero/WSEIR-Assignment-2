@@ -7,13 +7,12 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.RoundingMode;
-import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.*;
 
 public class search {
 
-    private static Hashtable<String, Pair> lexiconTable;
+    private static Hashtable<String, Integer> lexiconTable;
     private static Hashtable<Integer, String> documentMappingTable = new Hashtable<>();
     private static File lexicon;
     private static File map;
@@ -41,13 +40,9 @@ public class search {
         lexiconTable = new Hashtable<>();
         BufferedReader lexiconReader = new BufferedReader(new FileReader(lexicon));
         String lexiconLine;
-        int startingPoint = 0;
         while ((lexiconLine = lexiconReader.readLine()) != null) {
             String[] term = lexiconLine.split(",");
-            int length = Integer.parseInt(term[1].trim()) - startingPoint;
-            Pair p = new Pair(startingPoint, length);
-            lexiconTable.put(term[0], p);
-            startingPoint = Integer.parseInt(term[1].trim());
+            lexiconTable.put(term[0], Integer.parseInt(term[1].trim()));
         }
         lexiconReader.close();
     }
@@ -77,21 +72,6 @@ public class search {
 
 
     /**
-     * This class is to record the starting point and the reading length to avoid sequentially search
-     * when reading inverted index file
-     */
-    private static class Pair {
-        private int startingPoint;
-        private int length;
-
-        private Pair(int startingPoint, int length) {
-            this.startingPoint = startingPoint;
-            this.length = length;
-        }
-    }
-
-
-    /**
      * query the keywords and print the result on screen
      *
      * @param label query label
@@ -112,13 +92,13 @@ public class search {
                 System.out.println("There is no result for [" + term + "]." + System.lineSeparator());
                 continue;
             }
-            Pair pair = lexiconTable.get(term);
+            int startingPoint = lexiconTable.get(term);
             System.out.println(term);
 
             // if ranking mode is off
-            System.out.println(queryResult(readInvList(pair.startingPoint, pair.length), label));
+            System.out.println(queryResult(readInvList(startingPoint), label));
             // if ranking mode is on
-            System.out.println(queryResult(rankingMap(readInvList(pair.startingPoint, pair.length), 10), label, 10));
+            System.out.println(queryResult(rankingMap(readInvList(startingPoint), 10), label, 10, term));
         }
     }
 
@@ -127,30 +107,27 @@ public class search {
      * read file invList and get the target inverted list
      *
      * @param startPos start position in the inverted list
-     * @param length   reading length
      * @return query result as a hash map
      * @throws IOException if an I/O error occurs
      */
-    private static HashMap<Integer, Integer> readInvList(int startPos, int length) throws IOException {
+    private static HashMap<Integer, Integer> readInvList(int startPos) throws IOException {
         DataInputStream input = new DataInputStream(new FileInputStream(invlists));
-        byte[] bytes = new byte[100000];
         input.skipBytes(startPos);
-        input.read(bytes, 0, length);
-        
-        ByteBuffer buffer = ByteBuffer.wrap(bytes, 0, length);
-        
-        // ft is the number of documents containing term t
-        int ft = buffer.getInt();
 
-        // HashMap<did, fdt>
-        // did is the id of the document d
-        // fdt is the number of occurrences of t in d
+        int arrayLength = input.readInt();
+        Integer[] intArray = new Integer[arrayLength * 2];
+        for (int i = 0; i < arrayLength * 2; i++) {
+            intArray[i] = input.readInt();
+        }
+
         HashMap<Integer, Integer> resultMap = new HashMap<>();
-
-        while (buffer.remaining() > 0) {
-            int did = buffer.getInt();
-            int fdt = buffer.get();
-            resultMap.put(did, fdt);
+        int i = 0;
+        while (i < intArray.length - 1) {
+            int id = intArray[i];
+            i++;
+            int fdt = intArray[i];
+            i++;
+            resultMap.put(id, fdt);
         }
 
         input.close();
@@ -248,9 +225,9 @@ public class search {
      * @param topX the number of top X documents the query asked for
      * @return the interpretation of the list as a readable string
      */
-    private static String queryResult(ArrayList<DocumentRankingPoints> rankList, int label, int topX) {
+    private static String queryResult(ArrayList<DocumentRankingPoints> rankList, int label, int topX, String term) {
         StringBuilder builder = new StringBuilder();
-        builder.append("Top ").append(topX).append(" result: ").append(System.lineSeparator());
+        builder.append("Top ").append(topX).append(" result for \"").append(term).append("\": ").append(System.lineSeparator());
 
         for (int i = 0; i < rankList.size(); i++) {
             builder.append(label).append(" ");
