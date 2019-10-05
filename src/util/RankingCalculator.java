@@ -1,6 +1,6 @@
 package util;
 
-public class RankingPointCalculator {
+public class RankingCalculator {
 
     private static final double k1 = 1.2;
     private static final double b = 0.75;

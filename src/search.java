@@ -177,7 +177,7 @@ public class search {
         for (Integer i : countedMap.keySet()) {
             double fdt = countedMap.get(i).fdt;
             double Ld = countedMap.get(i).Ld;
-            double point = RankingPointCalculator.BM25(N, ft, fdt, Ld, AL);
+            double point = RankingCalculator.BM25(N, ft, fdt, Ld, AL);
             rank.addElement(new DocumentRankingPoints(i, point));
         }
         return rank.outputRank();

@@ -117,23 +117,29 @@ public class index {
         lexicon.createNewFile();
         invlists.delete();
         invlists.createNewFile();
-        try (BufferedWriter lexiconWriter = new BufferedWriter(new FileWriter(lexicon))) {
-            
-        	DataOutputStream out = new DataOutputStream(new FileOutputStream(invlists));
-        	for (String s : invertedList.keySet()) {
+
+        int clock = 0;
+        try (BufferedWriter lexiconWriter = new BufferedWriter(new FileWriter(lexicon));
+             DataOutputStream outputInvList = new DataOutputStream(new FileOutputStream(invlists))) {
+
+            int totalSize = invertedList.size();
+
+            for (String s : invertedList.keySet()) {
                 Hashtable<Integer, Integer> tempTable = invertedList.get(s);
-                out.writeInt(tempTable.size());
-                
+                outputInvList.writeInt(tempTable.size());
                 for (Integer i : tempTable.keySet()) {
-                	out.writeInt(i);
-                	out.write(tempTable.get(i));
+                    outputInvList.writeInt(i);
+                    outputInvList.writeInt(tempTable.get(i));
                 }
-                out.flush();
-                startPointer = out.size();
+                outputInvList.flush();
                 lexiconWriter.write(s + "," + startPointer + System.lineSeparator());
                 lexiconWriter.flush();
+
+                startPointer = outputInvList.size();
+
+                System.out.println(clock + "/" + totalSize);
+                clock++;
             }
-            out.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
