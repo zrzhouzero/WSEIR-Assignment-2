@@ -15,6 +15,7 @@ public class Summary {
     private String query;
     private String stoplistPath;
     private String directoryPath;
+    private String source;
 
     /**
      * to instantiate an object to store the relevant document
@@ -26,32 +27,19 @@ public class Summary {
         this.query = query;
         this.stoplistPath = stoplistPath;
         this.directoryPath = directoryPath;
+        this.loadDocument();
     }
 
 
     /**
-     * to generate a "static" or abstract summary based on the document
-     * as not all the documents in library have abstracts
-     * so in this project, we consider the first paragraph as the summary for convenience
-     *
-     * @return the generated summary
+     * load document to memory
      */
-    public String generateStaticSummary() {
-        return "";
-    }
-
-
-    /**
-     * to generate a "dynamic" or extract summary based on both the documents and the query
-     * return the three consecutive sentences with the largest ranking value
-     *
-     * @return the generated summary
-     */
-    public String generateDynamicSummary() {
+    private void loadDocument() {
         StringBuilder builder = new StringBuilder();
         File file = new File(directoryPath + documentId);
         try (Scanner sc = new Scanner(new FileReader(file))) {
 
+            // retrieve the document content and store it in memory
             boolean isStart = false;
             while (sc.hasNextLine()) {
                 String temp = sc.nextLine();
@@ -70,52 +58,102 @@ public class Summary {
                     builder.append(temp);
                 }
             }
-
-            HashMap<Integer, SentenceStructure> sentenceMap = new HashMap<>();
-            int sentenceId = 0;
-            HashSet<String> stoplist = new HashSet<>();
-            try (Scanner scanner = new Scanner(new FileReader(new File(stoplistPath)))) {
-                while (scanner.hasNextLine()) {
-                    stoplist.add(scanner.nextLine());
-                }
-            }
-
-            BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.UK);
-            String source = builder.toString();
-            iterator.setText(source);
-            int start = iterator.first();
-
-            for (int end = iterator.next();
-                 end != BreakIterator.DONE;
-                 start = end, end = iterator.next()) {
-                sentenceId++;
-                String origin = source.substring(start, end);
-
-                String str = "[.,\"/?!@#$%^&*--+=:'()<>;]";
-                Pattern pattern = Pattern.compile(str);
-                Matcher matcher;
-                matcher = pattern.matcher(origin);
-                String temp = matcher.replaceAll("").toLowerCase().trim();
-                String[] split = temp.split(" ");
-
-                int length = 0;
-                int termOccurrence = 0;
-                for (String s : split) {
-                    if (s.equals(this.query)) {
-                        termOccurrence++;
-                    }
-                    if (!stoplist.contains(s)) {
-                        length += s.length();
-                    }
-                }
-                sentenceMap.put(sentenceId, new SentenceStructure(origin, length, termOccurrence));
-            }
-
-            return findBestSentence(sentenceMap);
+            this.source = builder.toString();
 
         } catch (IOException e) {
-            return "ERROR, origin document cannot be found!";
+            this.source = "ERROR, the origin document cannot be found!";
         }
+    }
+
+
+    /**
+     * to generate a "static" or abstract summary based on the document
+     * as not all the documents in library have abstracts
+     * so in this project, we consider the first three sentences as the summary for convenience
+     *
+     * @return the generated summary
+     */
+    public String generateStaticSummary() {
+        if (this.source.equals("ERROR, the origin document cannot be found!")) {
+            return this.source;
+        }
+        int index = 0;
+
+        try {
+            index = this.source.indexOf(".");
+            index = this.source.indexOf(".", index + 1);
+            index = this.source.indexOf(".", index + 1);
+            return this.source.substring(0, index + 1);
+        } catch (Exception e) {
+            if (index == 0) {
+                return "The document contains nothing";
+            } else {
+                return this.source.substring(0, index + 1);
+            }
+        }
+    }
+
+
+    /**
+     * to generate a "dynamic" or extract summary based on both the documents and the query
+     * return the three consecutive sentences with the largest ranking value
+     *
+     * @return the generated summary
+     */
+    public String generateDynamicSummary() {
+        // initialise a hash map to store the content sentences
+        // load stop list
+        HashMap<Integer, SentenceStructure> sentenceMap = new HashMap<>();
+        int sentenceId = 0;
+        HashSet<String> stoplist = new HashSet<>();
+        try (Scanner scanner = new Scanner(new FileReader(new File(stoplistPath)))) {
+            while (scanner.hasNextLine()) {
+                stoplist.add(scanner.nextLine());
+            }
+        } catch (IOException e) {
+            stoplist = new HashSet<>();
+        }
+
+        // separate the content to sentences
+        BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.UK);
+        String source = this.source;
+        iterator.setText(source);
+        int start = iterator.first();
+
+        // process each sentence
+        // 0. clone the sentence for processing
+        // 1. remove punctuations (spaces remained)
+        // 2. split sentence into words
+        // 3. count the term occurrence
+        // 4. count sentence length without stop words
+        for (int end = iterator.next();
+             end != BreakIterator.DONE;
+             start = end, end = iterator.next()) {
+            sentenceId++;
+            String origin = source.substring(start, end);
+
+            // remove punctuation
+            String str = "[.,\"/?!@#$%^&*--+=:'()<>;]";
+            Pattern pattern = Pattern.compile(str);
+            Matcher matcher;
+            matcher = pattern.matcher(origin);
+            String temp = matcher.replaceAll("").toLowerCase().trim();
+            String[] split = temp.split(" ");
+
+            int length = 0;
+            int termOccurrence = 0;
+            for (String s : split) {
+                if (s.equals(this.query)) {
+                    termOccurrence++;
+                }
+                if (!stoplist.contains(s)) {
+                    length += s.length();
+                }
+            }
+            sentenceMap.put(sentenceId, new SentenceStructure(origin, length, termOccurrence));
+        }
+
+        return findBestSentence(sentenceMap);
     }
 
 
@@ -167,7 +205,7 @@ public class Summary {
 
 
     public static void main(String[] args) {
-        Summary s = new Summary(1, "society","src/docs/", "src/stoplist");
+        Summary s = new Summary(1, "society", "src/docs/", "src/stoplist");
         String dynamic = s.generateDynamicSummary();
         System.out.println(dynamic);
     }

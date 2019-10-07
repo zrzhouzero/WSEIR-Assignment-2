@@ -20,6 +20,8 @@ public class search {
     private static File map;
     private static File invlists;
 
+    private static boolean SUMMARY_MODE = true;
+
 
     /**
      * Print instruction when the parameters are invalid
@@ -238,8 +240,16 @@ public class search {
             DecimalFormat df = new DecimalFormat("#.###");
             df.setRoundingMode(RoundingMode.CEILING);
             builder.append(df.format(rankList.get(i).getDocumentPoint())).append(System.lineSeparator());
-            Summary summary = new Summary(rankList.get(i).getDocumentId(), term, "docs/", "stoplist");
-            builder.append(summary.generateDynamicSummary()).append(System.lineSeparator());
+
+            // if summary mode is on
+            if (SUMMARY_MODE) {
+                Summary summary = new Summary(rankList.get(i).getDocumentId(), term, "docs/", "stoplist");
+                builder.append("[Query-based Summary]").append(System.lineSeparator());
+                builder.append(summary.generateDynamicSummary()).append(System.lineSeparator());
+                builder.append("[Document-based Summary]").append(System.lineSeparator());
+                builder.append(summary.generateStaticSummary()).append(System.lineSeparator());
+                builder.append(System.lineSeparator());
+            }
         }
 
         return builder.toString();
