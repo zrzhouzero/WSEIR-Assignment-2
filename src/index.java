@@ -118,8 +118,6 @@ public class index {
                     }
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -135,7 +133,7 @@ public class index {
         invlists.delete();
         invlists.createNewFile();
 
-//        int clock = 0;
+        int clock = 0;
         try (BufferedWriter lexiconWriter = new BufferedWriter(new FileWriter(lexicon));
              DataOutputStream outputInvList = new DataOutputStream(new FileOutputStream(invlists))) {
             int totalSize = invertedList.size();
@@ -152,8 +150,12 @@ public class index {
 
                 startPointer = outputInvList.size();
 
-//                System.out.println(clock + "/" + totalSize);
-//                clock++;
+                String str = clock + "/" + totalSize;
+                System.out.print(str);
+                for (int i = 0; i < str.length(); i++) {
+                    System.out.print("\b");
+                }
+                clock++;
             }
         } catch (IOException e) {
             e.printStackTrace();
