@@ -1,6 +1,5 @@
 import java.io.*;
-import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,32 +13,65 @@ public class index {
         currentDocId = 1;
     }
 
-    public static void indexing(String sourceFilePath) {
-        indexing(sourceFilePath, null);
-    }
-
-    public static void indexing(String sourceFilePath, String stoplistPath) {
+    public static void indexing(String source, String stop, boolean print) throws IOException {
         // check if files exist
-        if (!checkFileExists(sourceFilePath, stoplistPath)) return;
+        if (!checkFileExists(source, stop)) return;
         // fetch terms stored in stoplist
-        HashSet<String> stoplist = fetchStopList(stoplistPath);
-        // parse source file
-        parse(new File(sourceFilePath), stoplist);
+        HashSet<String> stoplist = fetchStopList(stop);
+        split(new File(source));
+        File docs = new File("docs/");
+        File map = new File("map");
+        map.delete();
+        map.createNewFile();
+        for (File file : docs.listFiles()) {
+            parse(file, map,stoplist, print);
+        }
+        writeInvlistToFile();
     }
 
-    private static void parse(File sourceFile, HashSet<String> stoplist) {
+    private static void split(File source) {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(sourceFile));
+            File docs = new File("docs");
+            if (!docs.exists()){
+                docs.mkdir();
+            }
+            BufferedReader reader = new BufferedReader(new FileReader(source));
             String line;
-            boolean requireRecord = false;
+            StringBuffer content = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                content.append(line + System.lineSeparator());
+                if (line.contains("</DOC>")){
+                    String finalFileName = currentDocId + "";
+                    currentDocId ++;
+                    StringBuffer finalContent = content;
+                    content = new StringBuffer();
+                    new Thread(() -> {
+                        try {
+                            File splitFile = new File("docs/" + finalFileName);
+                            if (splitFile.exists()) splitFile.delete();
+                            splitFile.createNewFile();
+                            BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
+                            writer.write(finalContent.toString());
+                            writer.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        currentDocId = 1;
+    }
+
+    private static void parse(File file, File map, HashSet<String> stoplist, boolean print) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line;
+            boolean record = false;
             int count = 0;
-
-            // output map
-            File map = new File("map");
-            map.delete();
-            map.createNewFile();
-            BufferedWriter mapWriter = new BufferedWriter(new FileWriter(map));
-
+            BufferedWriter mapWriter = new BufferedWriter(new FileWriter(map, true));
             String str = "[.,\"/\\?!@#$%^&*--+=:'()<>;]";
             Pattern pattern = Pattern.compile(str);
             Matcher matcher;
@@ -48,24 +80,24 @@ public class index {
                     line = line.replace("<DOCNO>", "");
                     line = line.replace("</DOCNO>", "");
                     line = line.trim();
-                    mapWriter.append(String.valueOf(currentDocId)).append(",").append(line);
+                    mapWriter.append(file.getName()).append(",").append(line);
                     continue;
                 }
 
                 if (line.contains("</DOC>")) {
-                    currentDocId++;
-                    mapWriter.append(",").append(count + "").append(System.lineSeparator());
+                    mapWriter.append(",").append(String.valueOf(count)).append(System.lineSeparator());
+                    mapWriter.flush();
                     count = 0;
                     continue;
                 }
 
                 if (line.contains("<HEADLINE>") || line.contains("<TEXT>")) {
-                    requireRecord = true;
+                    record = true;
                     continue;
                 }
 
                 if (line.contains("</HEADLINE>") || line.contains("</TEXT>")) {
-                    requireRecord = false;
+                    record = false;
                     continue;
                 }
 
@@ -73,38 +105,26 @@ public class index {
                     continue;
                 }
 
-                if (requireRecord) {
+                if (record) {
                     String[] words = line.split(" ");
                     for (String word : words) {
                         matcher = pattern.matcher(word);
                         word = matcher.replaceAll("").toLowerCase().trim();
                         if(word.equals("")) continue;
                         if (stoplist.contains(word)) continue;
-                        System.out.println(word);
+                        if(print) System.out.println(word);
                         count += word.length();
                         updateInvlists(currentDocId, word);
                     }
                 }
             }
-            new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-		            try {
-						writeInvlistToFile();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}					
-				}
-            	
-            }).start();
-            mapWriter.close();
-            reader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
+
 
     private static void writeInvlistToFile() throws IOException {
         int startPointer = 0;
@@ -194,15 +214,27 @@ public class index {
         if (args.length == 0) {
             // for test
             //indexing("./src/latimes-100");
+            printUsage();
             return;
         }
-        if (args.length == 2 && args[0].equals("-p")) {
-            //index [-p] <sourceFile>
-            indexing(args[1]);
-        } else if (args.length == 4 && args[0].equals("-s") && args[2].equals("-p")) {
-            //index [-s <stoplist>] [-p] <sourcefile>
-            indexing(args[3], args[1]);
-        } else printUsage();
 
+        List<String> arguments = new ArrayList<String>(Arrays.asList(args));
+        int index = 0;
+        boolean print = false;
+        String source, stop = null;
+        if (arguments.contains("-p")) {
+            print = true;
+            arguments.remove("-p");
+        }
+        if (arguments.contains("-s")) {
+            index = arguments.indexOf("-s") + 1;
+            stop = arguments.get(index);
+        }
+        source = arguments.get(arguments.size() - 1);
+        try {
+            indexing(source, stop, print);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
