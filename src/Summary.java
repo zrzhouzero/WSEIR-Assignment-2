@@ -114,8 +114,7 @@ public class Summary {
             return findBestSentence(sentenceMap);
 
         } catch (IOException e) {
-            e.printStackTrace();
-            return "ERROR";
+            return "ERROR, origin document cannot be found!";
         }
     }
 

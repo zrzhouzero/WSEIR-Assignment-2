@@ -109,7 +109,6 @@ public class search {
                 continue;
             }
             int startingPoint = lexiconTable.get(term);
-            System.out.println(term);
 
             // if ranking mode is off
             if (!isRankOn) {
@@ -239,6 +238,8 @@ public class search {
             DecimalFormat df = new DecimalFormat("#.###");
             df.setRoundingMode(RoundingMode.CEILING);
             builder.append(df.format(rankList.get(i).getDocumentPoint())).append(System.lineSeparator());
+            Summary summary = new Summary(rankList.get(i).getDocumentId(), term, "docs/", "stoplist");
+            builder.append(summary.generateDynamicSummary()).append(System.lineSeparator());
         }
 
         return builder.toString();
