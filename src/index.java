@@ -1,11 +1,4 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
@@ -39,6 +32,7 @@ public class index {
             BufferedReader reader = new BufferedReader(new FileReader(sourceFile));
             String line;
             boolean requireRecord = false;
+            int count = 0;
 
             // output map
             File map = new File("map");
@@ -54,12 +48,14 @@ public class index {
                     line = line.replace("<DOCNO>", "");
                     line = line.replace("</DOCNO>", "");
                     line = line.trim();
-                    mapWriter.append(String.valueOf(currentDocId)).append(",").append(line).append(System.lineSeparator());
+                    mapWriter.append(String.valueOf(currentDocId)).append(",").append(line);
                     continue;
                 }
 
                 if (line.contains("</DOC>")) {
                     currentDocId++;
+                    mapWriter.append(",").append(count + "").append(System.lineSeparator());
+                    count = 0;
                     continue;
                 }
 
@@ -85,6 +81,7 @@ public class index {
                         if(word.equals("")) continue;
                         if (stoplist.contains(word)) continue;
                         System.out.println(word);
+                        count += word.length();
                         updateInvlists(currentDocId, word);
                     }
                 }
@@ -118,12 +115,10 @@ public class index {
         invlists.delete();
         invlists.createNewFile();
 
-        int clock = 0;
+//        int clock = 0;
         try (BufferedWriter lexiconWriter = new BufferedWriter(new FileWriter(lexicon));
              DataOutputStream outputInvList = new DataOutputStream(new FileOutputStream(invlists))) {
-
             int totalSize = invertedList.size();
-
             for (String s : invertedList.keySet()) {
                 Hashtable<Integer, Integer> tempTable = invertedList.get(s);
                 outputInvList.writeInt(tempTable.size());
@@ -137,8 +132,8 @@ public class index {
 
                 startPointer = outputInvList.size();
 
-                System.out.println(clock + "/" + totalSize);
-                clock++;
+//                System.out.println(clock + "/" + totalSize);
+//                clock++;
             }
         } catch (IOException e) {
             e.printStackTrace();
