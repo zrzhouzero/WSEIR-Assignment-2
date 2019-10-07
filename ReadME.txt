@@ -1,5 +1,5 @@
 Web Search Engine and Information Retrieval
-Assignment 1 Group 1
+Assignment 2 Group 1
 Created by: Zhirou Zhou, s3674467 & Pengqian Li, s3676048
 
 Compile two java files index.java and search.java using:

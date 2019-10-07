@@ -110,7 +110,7 @@ public class index {
                     for (String word : words) {
                         matcher = pattern.matcher(word);
                         word = matcher.replaceAll("").toLowerCase().trim();
-                        if(word.equals("")) continue;
+                        if (word.equals("")) continue;
                         if (stoplist.contains(word)) continue;
                         if(print) System.out.println(word);
                         count += word.length();
