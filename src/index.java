@@ -43,20 +43,26 @@ public class index {
                 if (line.contains("</DOC>")){
                     String finalFileName = currentDocId + "";
                     currentDocId ++;
-                    StringBuffer finalContent = content;
-                    content = new StringBuffer();
-                    new Thread(() -> {
-                        try {
-                            File splitFile = new File("docs/" + finalFileName);
-                            if (splitFile.exists()) splitFile.delete();
-                            splitFile.createNewFile();
-                            BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
-                            writer.write(finalContent.toString());
-                            writer.flush();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
+                    File splitFile = new File("docs/" + finalFileName);
+                    if (splitFile.exists()) splitFile.delete();
+                    splitFile.createNewFile();
+                    BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
+                    writer.write(content.toString());
+                    writer.flush();
+//                    StringBuffer finalContent = content;
+//                    content = new StringBuffer();
+//                    new Thread(() -> {
+//                        try {
+//                            File splitFile = new File("docs/" + finalFileName);
+//                            if (splitFile.exists()) splitFile.delete();
+//                            splitFile.createNewFile();
+//                            BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
+//                            writer.write(finalContent.toString());
+//                            writer.flush();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }).start();
                 }
             }
         } catch (IOException e) {
