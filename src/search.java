@@ -19,11 +19,10 @@ public class search {
     // file structure: document id, document title, document length
     private static File map;
     private static File invlists;
-    private static String stoplist;
 
     private static boolean SUMMARY_MODE = true;
     private static String documentDirectoryPath = "docs/";
-    private static String stopListPath = "stoplist";
+    private static String stopListPath = null;
 
 
     /**
@@ -271,6 +270,7 @@ public class search {
         lexicon = new File(filePath[0]);
         invlists = new File(filePath[1]);
         map = new File(filePath[2]);
+        if (filePath[3] != null) stopListPath = filePath[3];
         loadLexicon(lexicon);
         loadMap(map);
     }
