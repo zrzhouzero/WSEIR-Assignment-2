@@ -12,7 +12,7 @@ public class index {
     private static ExecutorService fixedThreadPool;
 
     static {
-        fixedThreadPool = Executors.newFixedThreadPool(6);
+        fixedThreadPool = Executors.newFixedThreadPool(60);
         invertedList = new Hashtable<>();
         currentDocId = 1;
     }
@@ -22,22 +22,24 @@ public class index {
         if (!checkFileExists(source, stop)) return;
         // fetch terms stored in stoplist
         HashSet<String> stoplist = fetchStopList(stop);
-        split(new File(source));
         File docs = new File("docs/");
         File map = new File("map");
         if (map.exists()) map.delete();
         map.createNewFile();
+        split(new File(source), map, stoplist, print);
         while(Thread.activeCount() != 1){
-            System.out.println("??");
-            continue;
+            System.out.print("Doing File split and parsing, active threads: " + fixedThreadPool. + "\r");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-        for (File file : docs.listFiles()) {
-            parse(file, map, stoplist, print);
-        }
+        System.out.println();
         writeInvlistToFile();
     }
 
-    private static void split(File source) {
+    private static void split(File source, File map, HashSet<String> stoplist, boolean print) {
         try {
             File docs = new File("docs");
             if (!docs.exists() || !docs.isDirectory()){
@@ -60,6 +62,7 @@ public class index {
                             BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
                             writer.write(finalContent.toString());
                             writer.close();
+                            parse(splitFile, map, stoplist,print );
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -72,6 +75,7 @@ public class index {
         }
         currentDocId = 1;
     }
+
 
     private static void parse(File file, File map, HashSet<String> stoplist, boolean print) {
         try {
@@ -126,6 +130,8 @@ public class index {
                     }
                 }
             }
+            mapWriter.close();
+            reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -157,10 +163,7 @@ public class index {
                 lexiconWriter.flush();
                 startPointer = outputInvList.size();
                 String str = clock + "/" + totalSize;
-                System.out.print(str);
-                for (int i = 0; i < str.length(); i++) {
-                    System.out.print("\b");
-                }
+                System.out.print(str + "\r");
                 clock++;
             }
         } catch (IOException e) {
