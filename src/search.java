@@ -317,7 +317,7 @@ public class search {
     // TODO: add more main line arguments, see assignment 2 page 4-5
     // search [-S [-s stop]]
     public static void main(String[] args) throws IOException {
-        long startTime = System.nanoTime();
+
         if (args.length == 0) {
             printInstruction();
             return;
@@ -367,11 +367,15 @@ public class search {
         queryItems = Arrays.copyOfRange(args, index, args.length);
 
         loadResources(lexicon, invLists, map, stop);
+
+        long startTime = System.nanoTime();
+
         query(queryLabel, numResults, BM25, queryItems);
 
         long endTime = System.nanoTime();
         long time = (endTime - startTime) / 1000000;
         System.out.println("Running time: " + time + " ms");
+        
     }
 
 }
