@@ -20,7 +20,7 @@ public class search {
     private static File map;
     private static File invlists;
 
-    private static boolean SUMMARY_MODE = true;
+    private static boolean SUMMARY_MODE;
     private static String documentDirectoryPath = "docs/";
     private static String stopListPath = null;
 
@@ -342,7 +342,6 @@ public class search {
         }
 
         if (arguments.contains("-s")) {
-            SUMMARY_MODE = true;
             index = arguments.indexOf("-s") + 1;
             stop = arguments.get(index);
         }
