@@ -309,7 +309,7 @@ public class search {
         int index = 0;
         boolean BM25 = false;
         int queryLabel = 0;
-        int numResults = 0;
+        int numResults = 1;
         SUMMARY_MODE = false;
         String lexicon = null, invLists = null, map = null, stop = null;
         String[] queryItems;
@@ -346,7 +346,7 @@ public class search {
             stop = arguments.get(index);
         }
         index += 1;
-        queryItems = (String[])arguments.subList(index, arguments.size()-1).toArray();
+        queryItems = Arrays.copyOfRange(args, index, args.length);
 
         loadResources(lexicon, invLists, map, stop);
         query(queryLabel, numResults, BM25, queryItems);
