@@ -12,7 +12,7 @@ public class index {
     private static ExecutorService fixedThreadPool;
 
     static {
-        fixedThreadPool = Executors.newFixedThreadPool(200);
+        fixedThreadPool = Executors.newFixedThreadPool(4);
         invertedList = new Hashtable<>();
         currentDocId = 1;
     }
@@ -25,10 +25,11 @@ public class index {
         File map = new File("map");
         if (map.exists()) map.delete();
         map.createNewFile();
+        System.out.println("--- Processing ---");
         parse(new File(source), map, stoplist, print);
         fixedThreadPool.shutdown();
         while(Thread.activeCount() != 1){
-            System.out.print("Doing File split and parsing, active threads: " + Thread.activeCount() + "\r");
+            System.out.print("Doing File splitting and parsing, active threads: " + Thread.activeCount() + "\r");
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
