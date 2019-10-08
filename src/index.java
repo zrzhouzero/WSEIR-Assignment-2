@@ -114,7 +114,7 @@ public class index {
                         if (stoplist.contains(word)) continue;
                         if(print) System.out.println(word);
                         count += word.length();
-                        updateInvlists(currentDocId, word);
+                        updateInvlists(Integer.parseInt(file.getName()), word);
                     }
                 }
             }
