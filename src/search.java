@@ -314,8 +314,6 @@ public class search {
     }
 
 
-    // TODO: add more main line arguments, see assignment 2 page 4-5
-    // search [-S [-s stop]]
     public static void main(String[] args) throws IOException {
 
         if (args.length == 0) {
@@ -331,6 +329,9 @@ public class search {
         int numResults = 1;
         String lexicon = null, invLists = null, map = null, stop = null;
         String[] queryItems;
+
+        long startTime = System.nanoTime();
+
         if (arguments.contains("-BM25")){
             BM25 = true;
         }
@@ -367,8 +368,6 @@ public class search {
         queryItems = Arrays.copyOfRange(args, index, args.length);
 
         loadResources(lexicon, invLists, map, stop);
-
-        long startTime = System.nanoTime();
 
         query(queryLabel, numResults, BM25, queryItems);
 

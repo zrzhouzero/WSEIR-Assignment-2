@@ -6,7 +6,6 @@ import java.util.List;
 public class advanced {
 
     public static void main(String[] args) throws IOException {
-        long startTime = System.nanoTime();
 //        if (args.length == 0) {
 //            search.printInstruction();
 //            return;
@@ -20,6 +19,9 @@ public class advanced {
         int numResults = 1;
         String lexicon = null, invLists = null, map = null, stop = null;
         String[] queryItems;
+
+        long startTime = System.nanoTime();
+
         if (arguments.contains("-BM25")){
             BM25 = true;
         }
