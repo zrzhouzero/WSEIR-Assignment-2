@@ -25,3 +25,5 @@ advanced Usage:
     -s <stoplist> <queryterm-1> [<queryterm-2> ... <queryterm-N>]
 
     e.g. java advanced -q 401 -n 5 -l lexicon -i invlists -m map -s stoplist volcano america active
+
+The time consumption of indexing could be very long due to that the source file is needed to be split into individual files which contains one document each. This is for summarisation function to retrieve document directly from the target file instead of reading the whole source file again.
