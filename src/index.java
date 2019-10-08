@@ -27,12 +27,12 @@ public class index {
         File map = new File("map");
         if (map.exists()) map.delete();
         map.createNewFile();
-        for (File file : docs.listFiles()) {
-            parse(file, map, stoplist, print);
-        }
         while(Thread.activeCount() != 1){
             System.out.println("??");
             continue;
+        }
+        for (File file : docs.listFiles()) {
+            parse(file, map, stoplist, print);
         }
         writeInvlistToFile();
     }
