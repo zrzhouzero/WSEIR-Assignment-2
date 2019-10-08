@@ -22,6 +22,8 @@ public class search {
     private static String stoplist;
 
     private static boolean SUMMARY_MODE = true;
+    private static String documentDirectoryPath = "docs/";
+    private static String stopListPath = "stoplist";
 
 
     /**
@@ -57,10 +59,10 @@ public class search {
      * This class is to record the document id and document length as the attribute of a document
      */
     public static class DocumentInfo {
-        public String documentTitle;
-        public double documentLength;
+        String documentTitle;
+        double documentLength;
 
-        public DocumentInfo(String documentTitle, double documentLength) {
+        DocumentInfo(String documentTitle, double documentLength) {
             this.documentTitle = documentTitle;
             this.documentLength = documentLength;
         }
@@ -244,7 +246,7 @@ public class search {
 
             // if summary mode is on
             if (SUMMARY_MODE) {
-                Summary summary = new Summary(rankList.get(i).getDocumentId(), term, "docs/", stoplist);
+                Summary summary = new Summary(rankList.get(i).getDocumentId(), term, documentDirectoryPath, stopListPath);
                 builder.append("[Query-based Summary]").append(System.lineSeparator());
                 builder.append(summary.generateDynamicSummary()).append(System.lineSeparator());
                 builder.append("[Document-based Summary]").append(System.lineSeparator());
