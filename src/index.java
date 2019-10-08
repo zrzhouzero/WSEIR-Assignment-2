@@ -59,7 +59,7 @@ public class index {
                             if (!splitFile.exists()) splitFile.createNewFile();
                             BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
                             writer.write(finalContent.toString());
-                            writer.flush();
+                            writer.close();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
