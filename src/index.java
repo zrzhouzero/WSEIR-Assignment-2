@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -7,8 +9,10 @@ public class index {
 
     private static Hashtable<String, Hashtable<Integer, Integer>> invertedList;
     private static int currentDocId;
+    private static ExecutorService fixedThreadPool;
 
     static {
+        fixedThreadPool = Executors.newFixedThreadPool(6);
         invertedList = new Hashtable<>();
         currentDocId = 1;
     }
@@ -21,10 +25,14 @@ public class index {
         split(new File(source));
         File docs = new File("docs/");
         File map = new File("map");
-        map.delete();
+        if (map.exists()) map.delete();
         map.createNewFile();
         for (File file : docs.listFiles()) {
-            parse(file, map,stoplist, print);
+            parse(file, map, stoplist, print);
+        }
+        while(Thread.activeCount() != 1){
+            System.out.println("??");
+            continue;
         }
         writeInvlistToFile();
     }
@@ -43,28 +51,23 @@ public class index {
                 if (line.contains("</DOC>")){
                     String finalFileName = currentDocId + "";
                     currentDocId ++;
-                    File splitFile = new File("docs/" + finalFileName);
-                    if (splitFile.exists()) splitFile.delete();
-                    splitFile.createNewFile();
-                    BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
-                    writer.write(content.toString());
-                    writer.flush();
-//                    StringBuffer finalContent = content;
-//                    content = new StringBuffer();
-//                    new Thread(() -> {
-//                        try {
-//                            File splitFile = new File("docs/" + finalFileName);
-//                            if (splitFile.exists()) splitFile.delete();
-//                            splitFile.createNewFile();
-//                            BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
-//                            writer.write(finalContent.toString());
-//                            writer.flush();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }).start();
+                    StringBuffer finalContent = content;
+                    content = new StringBuffer();
+                    fixedThreadPool.execute(() -> {
+                        try {
+                            File splitFile = new File("docs/" + finalFileName);
+                            if (splitFile.exists()) splitFile.delete();
+                            splitFile.createNewFile();
+                            BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
+                            writer.write(finalContent.toString());
+                            writer.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 }
             }
+            fixedThreadPool.shutdown();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -153,9 +156,7 @@ public class index {
                 outputInvList.flush();
                 lexiconWriter.write(s + "," + startPointer + System.lineSeparator());
                 lexiconWriter.flush();
-
                 startPointer = outputInvList.size();
-
                 String str = clock + "/" + totalSize;
                 System.out.print(str);
                 for (int i = 0; i < str.length(); i++) {
