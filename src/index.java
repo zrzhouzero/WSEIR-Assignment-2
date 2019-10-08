@@ -25,7 +25,7 @@ public class index {
         File map = new File("map");
         if (map.exists()) map.delete();
         map.createNewFile();
-        split(new File(source), map, stoplist, print);
+        parse(new File(source), map, stoplist, print);
         fixedThreadPool.shutdown();
         while(Thread.activeCount() != 1){
             System.out.print("Doing File split and parsing, active threads: " + Thread.activeCount() + "\r");
@@ -39,46 +39,12 @@ public class index {
         writeInvlistToFile();
     }
 
-    private static void split(File source, File map, HashSet<String> stoplist, boolean print) {
+    private static void parse(File file, File map, HashSet<String> stoplist, boolean print) {
         try {
             File docs = new File("docs");
             if (!docs.exists() || !docs.isDirectory()){
                 docs.mkdir();
             }
-            BufferedReader reader = new BufferedReader(new FileReader(source));
-            String line;
-            StringBuffer content = new StringBuffer();
-            while ((line = reader.readLine()) != null) {
-                content.append(line + System.lineSeparator());
-                if (line.contains("</DOC>")){
-                    String finalFileName = currentDocId + "";
-                    currentDocId ++;
-                    StringBuffer finalContent = content;
-                    content = new StringBuffer();
-                    fixedThreadPool.execute(() -> {
-                        try {
-                            File splitFile = new File(docs.getAbsolutePath() +"//"+ finalFileName);
-                            if (!splitFile.exists()) splitFile.createNewFile();
-                            BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
-                            writer.write(finalContent.toString());
-                            writer.close();
-                            parse(splitFile, map, stoplist,print );
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                }
-            }
-            fixedThreadPool.shutdown();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        currentDocId = 1;
-    }
-
-
-    private static void parse(File file, File map, HashSet<String> stoplist, boolean print) {
-        try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             String line;
             boolean record = false;
@@ -87,7 +53,9 @@ public class index {
             String str = "[.,\"/\\?!@#$%^&*--+=:'()<>;]";
             Pattern pattern = Pattern.compile(str);
             Matcher matcher;
+            StringBuffer content = new StringBuffer();
             while ((line = reader.readLine()) != null) {
+                content.append(line + System.lineSeparator());
                 if (line.contains("<DOCNO>")) {
                     line = line.replace("<DOCNO>", "");
                     line = line.replace("</DOCNO>", "");
@@ -100,6 +68,21 @@ public class index {
                     mapWriter.append(",").append(String.valueOf(count)).append(System.lineSeparator());
                     mapWriter.flush();
                     count = 0;
+                    String finalFileName = currentDocId + "";
+                    currentDocId ++;
+                    StringBuffer finalContent = content;
+                    content = new StringBuffer();
+                    fixedThreadPool.execute(() -> {
+                        try {
+                            File splitFile = new File(docs.getAbsolutePath() +"//"+ finalFileName);
+                            if (!splitFile.exists()) splitFile.createNewFile();
+                            BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
+                            writer.write(finalContent.toString());
+                            writer.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
                     continue;
                 }
 
@@ -126,7 +109,7 @@ public class index {
                         if (stoplist.contains(word)) continue;
                         if(print) System.out.println(word);
                         count += word.length();
-                        updateInvlists(Integer.parseInt(file.getName()), word);
+                        updateInvlists(currentDocId, word);
                     }
                 }
             }
