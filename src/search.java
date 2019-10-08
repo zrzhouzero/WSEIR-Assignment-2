@@ -33,7 +33,6 @@ public class search {
                 "    [-s <stoplist>] <queryterm-1> [<queryterm-2> ... <queryterm-N>]\n" +
                 "\n" +
                 "    e.g. java search -BM25 -q 401 -n 10 -l lexicon -i invlists -m map volcano america active.";
-        System.out.println("Invalid Input.");
         System.out.println(usage);
     }
 

@@ -21,7 +21,7 @@ public class advanced {
         String[] queryItems;
 
         long startTime = System.nanoTime();
-        
+
         if (arguments.contains("-q")) {
             index = arguments.indexOf("-q") + 1;
             queryLabel = Integer.parseInt(arguments.get(index));
@@ -88,7 +88,6 @@ public class advanced {
                 "    -s <stoplist> <queryterm-1> [<queryterm-2> ... <queryterm-N>]\n" +
                 "\n" +
                 "    e.g. java advanced -q 401 -n 5 -l lexicon -i invlists -m map -s stoplist volcano america active.";
-        System.out.println("Invalid Input.");
         System.out.println(usage);
     }
 }
