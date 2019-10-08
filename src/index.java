@@ -40,7 +40,7 @@ public class index {
     private static void split(File source) {
         try {
             File docs = new File("docs");
-            if (!docs.exists()){
+            if (!docs.exists() || !docs.isDirectory()){
                 docs.mkdir();
             }
             BufferedReader reader = new BufferedReader(new FileReader(source));
@@ -55,9 +55,8 @@ public class index {
                     content = new StringBuffer();
                     fixedThreadPool.execute(() -> {
                         try {
-                            File splitFile = new File("docs/" + finalFileName);
-                            if (splitFile.exists()) splitFile.delete();
-                            splitFile.createNewFile();
+                            File splitFile = new File(docs.getAbsolutePath() + finalFileName);
+                            if (!splitFile.exists()) splitFile.createNewFile();
                             BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
                             writer.write(finalContent.toString());
                             writer.flush();
