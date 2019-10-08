@@ -56,12 +56,12 @@ public class index {
             Matcher matcher;
             StringBuffer content = new StringBuffer();
             while ((line = reader.readLine()) != null) {
-                content.append(line + System.lineSeparator());
+                content.append(line).append(System.lineSeparator());
                 if (line.contains("<DOCNO>")) {
                     line = line.replace("<DOCNO>", "");
                     line = line.replace("</DOCNO>", "");
                     line = line.trim();
-                    mapWriter.append(file.getName()).append(",").append(line);
+                    mapWriter.append(String.valueOf(currentDocId)).append(",").append(line);
                     continue;
                 }
 
