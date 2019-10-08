@@ -28,8 +28,13 @@ public class search {
      * Print instruction when the parameters are invalid
      */
     private static void printInstruction() {
+        String usage = "search Usage:\n" +
+                "    java search -BM25 -q <query-label> -n <num-results> -l <lexicon> -i <invlists> -m map \n" +
+                "    [-s <stoplist>] <queryterm-1> [<queryterm-2> ... <queryterm-N>]\n" +
+                "\n" +
+                "    e.g. java search -BM25 -q 401 -n 10 -l lexicon -i invlists -m map volcano america active.";
         System.out.println("Invalid Input.");
-        System.out.println("Usage:\n\tjava search <lexicon> <invlists> <map> <queryterm 1> [... <queryterm N>]");
+        System.out.println(usage);
     }
 
 
@@ -338,6 +343,10 @@ public class search {
         if (arguments.contains("-q")) {
             index = arguments.indexOf("-q") + 1;
             queryLabel = Integer.parseInt(arguments.get(index));
+        } else {
+            System.out.println("Do not detect the argument, -q <query-label>");
+            printInstruction();
+            return;
         }
 
         if (arguments.contains("-n")) {
@@ -348,16 +357,28 @@ public class search {
         if (arguments.contains("-l")) {
             index = arguments.indexOf("-l") + 1;
             lexicon = arguments.get(index);
+        } else {
+            System.out.println("Do not detect the argument, -l <lexicon>");
+            printInstruction();
+            return;
         }
 
         if (arguments.contains("-i")) {
             index = arguments.indexOf("-i") + 1;
             invLists = arguments.get(index);
+        } else {
+            System.out.println("Do not detect the argument, -i <invlists>");
+            printInstruction();
+            return;
         }
 
         if (arguments.contains("-m")) {
             index = arguments.indexOf("-m") + 1;
             map = arguments.get(index);
+        } else {
+            System.out.println("Do not detect the argument, -m <map>");
+            printInstruction();
+            return;
         }
 
         if (arguments.contains("-s")) {

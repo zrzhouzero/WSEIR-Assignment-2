@@ -201,7 +201,14 @@ public class index {
 
     private static void printUsage() {
         System.out.println("invalid input.");
-        System.out.println("Usage: index [-p] <sourceFile> or index [-s <stoplist>] [-p] <sourcefile>.");
+        String usage = "index Usage:\n" +
+                "    java index [-s <stoplist>] [-p] <sourcefile>.\n" +
+                "    -s <stoplist> is an optional argument which indicate a stoplist.\n" +
+                "    -p is an optional argument that determines whether print the filtered term to screen\n" +
+                "    <sourcefile> is the path of the source file which should be always the last argument.\n" +
+                "\n" +
+                "    eg. java index -s stoplist latimes-100";
+        System.out.println(usage);
     }
 
     public static void main(String[] args) {
