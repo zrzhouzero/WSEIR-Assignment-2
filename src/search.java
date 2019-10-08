@@ -19,6 +19,7 @@ public class search {
     // file structure: document id, document title, document length
     private static File map;
     private static File invlists;
+    private static String stoplist;
 
     private static boolean SUMMARY_MODE = true;
 
@@ -243,7 +244,7 @@ public class search {
 
             // if summary mode is on
             if (SUMMARY_MODE) {
-                Summary summary = new Summary(rankList.get(i).getDocumentId(), term, "docs/", "stoplist");
+                Summary summary = new Summary(rankList.get(i).getDocumentId(), term, "docs/", stoplist);
                 builder.append("[Query-based Summary]").append(System.lineSeparator());
                 builder.append(summary.generateDynamicSummary()).append(System.lineSeparator());
                 builder.append("[Document-based Summary]").append(System.lineSeparator());
@@ -257,7 +258,7 @@ public class search {
 
 
     /**
-     * load lexicon, invList, and map to system
+     * load lexicon, invList, and map [stoplist] to system
      *
      * @param filePath the paths of the above three files
      * @throws NumberFormatException see above @loadLexicon
@@ -293,27 +294,74 @@ public class search {
 
 
     // TODO: add more main line arguments, see assignment 2 page 4-5
+    // search [-S [-s stop]]
     public static void main(String[] args) throws IOException {
         long startTime = System.nanoTime();
         if (args.length == 0) {
-            // for test in ide
-//            loadResources("./lexicon", "./invlists", "./map");
-//			query("hit", "flat", "meeting");
             printInstruction();
             return;
         }
-        if (args.length >= 4) {
-            loadResources(args[0], args[1], args[2]);
-            String[] terms = Arrays.copyOfRange(args, 3, args.length);
 
-            // TODO: add a function to label the query, currently hard coded the label as "401"
-            int label = 401;
-            int numOfResult = 10;
-            boolean isRankOn = true;
-            query(label, numOfResult, isRankOn, terms);
-        } else {
-            printInstruction();
+        List<String> arguments = new ArrayList<>(Arrays.asList(args));
+
+        int index = 0;
+        boolean BM25 = false;
+        int queryLabel = 0;
+        int numResults = 0;
+        SUMMARY_MODE = false;
+        String lexicon = null, invLists = null, map = null, stop = null;
+        String[] queryItems;
+        if (arguments.contains("-BM25")){
+            BM25 = true;
         }
+        if (arguments.contains("-q")) {
+            index = arguments.indexOf("-q") + 1;
+            queryLabel = Integer.parseInt(arguments.get(index));
+        }
+
+        if (arguments.contains("-n")) {
+            index = arguments.indexOf("-n") + 1;
+            numResults = Integer.parseInt(arguments.get(index));
+        }
+
+        if (arguments.contains("-l")) {
+            index = arguments.indexOf("-l") + 1;
+            lexicon = arguments.get(index);
+        }
+
+        if (arguments.contains("-i")) {
+            index = arguments.indexOf("-i") + 1;
+            invLists = arguments.get(index);
+        }
+
+        if (arguments.contains("-m")) {
+            index = arguments.indexOf("-m") + 1;
+            map = arguments.get(index);
+        }
+
+        if (arguments.contains("-s")) {
+            SUMMARY_MODE = true;
+            index = arguments.indexOf("-s") + 1;
+            stop = arguments.get(index);
+        }
+        index += 1;
+        queryItems = (String[])arguments.subList(index, arguments.size()-1).toArray();
+
+        loadResources(lexicon, invLists, map, stop);
+        query(queryLabel, numResults, BM25, queryItems);
+
+//        if (args.length >= 4) {
+//            loadResources(args[0], args[1], args[2]);
+//            String[] terms = Arrays.copyOfRange(args, 3, args.length);
+//
+//            // TODO: add a function to label the query, currently hard coded the label as "401"
+//            int label = 401;
+//            int numOfResult = 10;
+//            boolean isRankOn = true;
+//            query(label, numOfResult, isRankOn, terms);
+//        } else {
+//            printInstruction();
+//        }
         long endTime = System.nanoTime();
         long time = (endTime - startTime) / 1000000;
         System.out.println("Running time: " + time + " ms");

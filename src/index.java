@@ -114,7 +114,7 @@ public class index {
                         if (stoplist.contains(word)) continue;
                         if(print) System.out.println(word);
                         count += word.length();
-                        updateInvlists(currentDocId, word);
+                        updateInvlists(Integer.parseInt(file.getName()), word);
                     }
                 }
             }
@@ -220,7 +220,7 @@ public class index {
             return;
         }
 
-        List<String> arguments = new ArrayList<String>(Arrays.asList(args));
+        List<String> arguments = new ArrayList<>(Arrays.asList(args));
         int index = 0;
         boolean print = false;
         String source, stop = null;
