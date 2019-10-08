@@ -55,7 +55,7 @@ public class index {
                     content = new StringBuffer();
                     fixedThreadPool.execute(() -> {
                         try {
-                            File splitFile = new File(docs.getAbsolutePath() +"\\"+ finalFileName);
+                            File splitFile = new File(docs.getAbsolutePath() +"//"+ finalFileName);
                             if (!splitFile.exists()) splitFile.createNewFile();
                             BufferedWriter writer = new BufferedWriter(new FileWriter(splitFile));
                             writer.write(finalContent.toString());
