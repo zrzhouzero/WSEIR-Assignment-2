@@ -20,7 +20,6 @@ public class search {
     private static File map;
     private static File invlists;
 
-    private static boolean SUMMARY_MODE;
     private static String documentDirectoryPath = "docs/";
     private static String stopListPath = null;
 
@@ -119,10 +118,30 @@ public class search {
                 System.out.println(queryResult(readInvList(startingPoint), label));
             } else {
                 // if ranking mode is on
-                System.out.println(queryResult(rankingMap(readInvList(startingPoint), numOfResults), label, numOfResults, term));
+                System.out.println(queryResult(rankingMap(readInvList(startingPoint), numOfResults), label, numOfResults, term, false));
             }
         }
     }
+
+    protected static void advancedQuery(int label, int numResult, boolean isRankOn, String... terms) throws IOException {
+        // search the target word in lexicon table
+        // 1. target the query term in the lexicon table
+        // 2. get the pointer of the term
+        // 3. read the invlist file starting at the pointer
+        // 4. retrieve the part of the term
+        // 5. store the integer list for later interpretation
+        for (String term : terms) {
+            // no relevant result for this term
+            if (!lexiconTable.containsKey(term)) {
+                System.out.println(term);
+                System.out.println("There is no result for [" + term + "]." + System.lineSeparator());
+                continue;
+            }
+            int startingPoint = lexiconTable.get(term);
+            System.out.println(queryResult(rankingMap(readInvList(startingPoint), numResult), label, numResult, term, true));
+        }
+    }
+
 
 
     /**
@@ -230,7 +249,7 @@ public class search {
      * @param topX     the number of top X documents the query asked for
      * @return the interpretation of the list as a readable string
      */
-    private static String queryResult(ArrayList<DocumentRankingPoints> rankList, int label, int topX, String term) {
+    private static String queryResult(ArrayList<DocumentRankingPoints> rankList, int label, int topX, String term, boolean summaryMode) {
         StringBuilder builder = new StringBuilder();
         builder.append("Top ").append(topX).append(" result for \"").append(term).append("\": ").append(System.lineSeparator());
 
@@ -244,7 +263,7 @@ public class search {
             builder.append(df.format(rankList.get(i).getDocumentPoint())).append(System.lineSeparator());
 
             // if summary mode is on
-            if (SUMMARY_MODE) {
+            if (summaryMode) {
                 Summary summary = new Summary(rankList.get(i).getDocumentId(), term, documentDirectoryPath, stopListPath);
                 builder.append("[Query-based Summary]").append(System.lineSeparator());
                 builder.append(summary.generateDynamicSummary()).append(System.lineSeparator());
@@ -265,7 +284,7 @@ public class search {
      * @throws NumberFormatException see above @loadLexicon
      * @throws IOException           when I/O error occurs
      */
-    private static void loadResources(String... filePath) throws NumberFormatException, IOException {
+    protected static void loadResources(String... filePath) throws NumberFormatException, IOException {
         if (!checkFileExists(filePath)) System.exit(0);
         lexicon = new File(filePath[0]);
         invlists = new File(filePath[1]);
@@ -310,7 +329,6 @@ public class search {
         boolean BM25 = false;
         int queryLabel = 0;
         int numResults = 1;
-        SUMMARY_MODE = false;
         String lexicon = null, invLists = null, map = null, stop = null;
         String[] queryItems;
         if (arguments.contains("-BM25")){
@@ -354,18 +372,6 @@ public class search {
 
         query(queryLabel, numResults, BM25, queryItems);
 
-//        if (args.length >= 4) {
-//            loadResources(args[0], args[1], args[2]);
-//            String[] terms = Arrays.copyOfRange(args, 3, args.length);
-//
-//            // TODO: add a function to label the query, currently hard coded the label as "401"
-//            int label = 401;
-//            int numOfResult = 10;
-//            boolean isRankOn = true;
-//            query(label, numOfResult, isRankOn, terms);
-//        } else {
-//            printInstruction();
-//        }
         long endTime = System.nanoTime();
         long time = (endTime - startTime) / 1000000;
         System.out.println("Running time: " + time + " ms");
